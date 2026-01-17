@@ -1,0 +1,51 @@
+services:
+  mysqldb:
+    image: mysql:8.0
+    container_name: mysql-container
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DATABASE_NAME}
+      MYSQL_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD}
+      MYSQL_USER: ${DATABASE_USER_NAME}
+      MYSQL_PASSWORD: ${DATABASE_USER_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    # --- AGREGA ESTO: CHEQUEO DE SALUD ---
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    # -------------------------------------
+    networks:
+      - spring-net
+
+  app:
+    build: .
+    image: prueba-java:latest
+    container_name: spring-app
+    restart: on-failure
+    # --- MODIFICA ESTO ---
+    depends_on:
+      mysqldb:
+        condition: service_healthy # Espera a que el healthcheck dé "OK"
+    # ---------------------
+    environment:
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/${DATABASE_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${DATABASE_USER_NAME}
+      SPRING_DATASOURCE_PASSWORD: ${DATABASE_USER_PASSWORD}
+      # Opcional: Define el dialecto para evitar el error de metadata si falla la conexión
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQL8Dialect
+    ports:
+      - "8081:8080"
+    networks:
+      - spring-net
+
+volumes:
+  mysql-data:
+
+networks:
+  spring-net:
+    driver: bridge
