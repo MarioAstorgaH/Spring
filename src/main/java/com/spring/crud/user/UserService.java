@@ -50,4 +50,11 @@ public class UserService {
 
         return userMapper.toResponse(updatedUser);
     }
+
+    public void deleteUser(Long id){
+        if(!userRepository.existsById(id)){
+            throw new UserNotFoundException("User: "+id+" not found");
+        }
+        userRepository.deleteById(id);
+    }
 }
