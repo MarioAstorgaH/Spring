@@ -2,6 +2,7 @@ package com.spring.crud.user;
 
 import com.spring.crud.user.dto.CreateUserDTO;
 import com.spring.crud.user.dto.UserResponseDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -22,7 +23,7 @@ public class UserController {
         return this.userService.getAllUsers();
     }
     @PostMapping()
-    public ResponseEntity<UserResponseDTO> createUser(@RequestBody CreateUserDTO user){
+    public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody CreateUserDTO user){
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userService.createUser(user));
     }
@@ -32,7 +33,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
     @PutMapping(path="/{id}")
-    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id, @RequestBody CreateUserDTO user){
+    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id, @Valid @RequestBody CreateUserDTO user){
         return ResponseEntity.ok(userService.updateUser(id,user));
     }
     @DeleteMapping(path="/{id}")
